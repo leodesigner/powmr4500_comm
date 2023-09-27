@@ -1,2 +1,296 @@
 # PowMr 4500 / 6500 communication protocol
 
+![img](https://github.com/leodesigner/powmr4500_comm/blob/main/Screenshot%202023-09-27%20at%2010.10.11.png)
+
+
+Non complete reverse engeneering of communication protocol used by
+[PowMr 4500 hybrid inverter](https://powmr.com/products/hybrid-inveter-charger-4500w-220vac-24vdc)
+
+It uses RS232 port with pinout mentioned in the 
+[PowMr Inverter serial communication protocol repository](https://github.com/leodesigner/powmr_comm)
+
+With the binary frames commnication protocol similar to simplified modbus. (8851 protocol ?)
+
+The serial speed is 9600 baud, mode 8N1 (8 bits, 1 stop bit)
+
+In order to request information from inverter you have to send two types of messages:
+
+### State request:
+```
+// periodically request inverter state
+void request_state() {
+  unsigned char req[12];
+  unsigned int req_len = 0;
+
+  char req_hex_state[] = "88510003000000004d08";
+
+  HexStringToBytes(req_hex_state, req, &req_len);
+  Ser1.write(req, req_len); 
+}
+```
+
+
+
+For the status reply you will receive a frame like this one:
+```
+88510003000090008533810b0000000034000000000000000000000000000000000010000c00000000000000000000000000f4089f0088136c01c7008b008700080403035700000003000000060000000000000000004d09030000000000d20608000700c50d0000fcff00000000303130190000000000000000000000000000000000000000000000000000000000000000000000000000cb2a
+```
+
+Which can be parsed:
+```
+       // check if we got valid packet
+        if (buffer[0] == 0x88 && buffer[1] == 0x51) 
+        {
+          uint16_t crc = modbus_crc16((const unsigned char *) buffer, index - 2);
+
+          if ( (uint8_t) buffer[index-2] == (crc & 0xFF)  &&  (uint8_t) buffer[index-1] == ( (crc & 0xFF00) >> 8)  ) {
+
+            // lets see what kind of packet we have here
+            if ( buffer[2] == 0x00 
+                  && buffer[3] == 0x03 
+                  && buffer[4] == 0x00
+                  && buffer[5] == 0x00) {
+              // state reply
+              // parse all variables
+              uint16_t *data = (uint16_t *) buffer;
+
+              //batt_voltage = htons(data[172/2]) / 100.0;
+              batt_voltage = data[172/4] / 100.0;
+              publish_float2("/iot/node/powmr/s/batt_voltage", batt_voltage);
+
+              batt_charge_current = ( (int16_t)(data[176/4]) ) / 10.0;
+              publish_float("/iot/node/powmr/s/batt_charge_current", batt_charge_current);
+
+              pv_voltage = data[188/4] / 10.0;
+              publish_float("/iot/node/powmr/s/pv_voltage", pv_voltage);
+
+              pv_current = data[192/4] / 100.0;
+              publish_float("/iot/node/powmr/s/pv_current", pv_current);
+
+              pv_power = data[196/4] / 1.0;
+              publish_float("/iot/node/powmr/s/pv_power", pv_power);
+
+              bus_voltage = data[200/4] / 10.0;
+              publish_float("/iot/node/powmr/s/bus_voltage", bus_voltage);
+
+              grid_voltage = data[148/4] / 10.0;
+              publish_float("/iot/node/powmr/s/grid_voltage", grid_voltage);
+
+              grid_current = data[152/4] / 100.0;
+              publish_float("/iot/node/powmr/s/grid_current", grid_current);
+
+              inv_voltage = data[100/4] / 10.0;
+              publish_float("/iot/node/powmr/s/inv_voltage", inv_voltage);
+
+              inv_current = data[104/4] / 100.0;
+              publish_float("/iot/node/powmr/s/inv_current", inv_current);
+
+              inv_va = data[112/4] / 1.0;
+              publish_float("/iot/node/powmr/s/inv_va", inv_va);
+
+              load_current = data[136/4] / 100.0;
+              publish_float("/iot/node/powmr/s/load_current", load_current);
+
+              load_va = data[116/4] / 1.0;
+              publish_float("/iot/node/powmr/s/load_va", load_va);
+
+              load_power = data[124/4] / 1.0;
+              publish_float("/iot/node/powmr/s/load_power", load_power);
+
+```
+
+The last two bytes is a CRC16 of entire message, the algorithm used is the same as [modbus CRC16](https://crccalc.com/?crc=8851000302000000&method=crc16&datatype=hex&outtype=0)
+
+
+Hex dump and variable offsets:
+```
+88510003000090008a33810b0000000001000000000000010000000000000000000010000c00000000000000000000000000b10836009413780083009cff16000202ff003b00000086ffac0836008a130000000000008408950000000000c0082e006100c20c00002d0100000000332a36190000000000000000000000000000000000000000000000000000000000000000000000000000b186
+
+
+         LSB MSB
+offset   variable                                                     Resolution
+100       0008  = 204.8   Volt -      inverter Voltage     (int value / 10)  0,1 Volt
+104       9000  = 1.4 A   A       Inverter Current         value / 100       0.01 A  
+108       9413  = 50.1 Hz         Inverter Frequency       value / 100       0.01 Hz
+112       7800  = 120 W           Inv VA                   value             1 VA
+116       8300  = 131 W           Load VA                  value             1 VA
+120       9cff  ???
+124       1600  = 22 W            Load W                   value             1 W
+128       0202  ???
+132       ff05  ???
+136       3b10  =   4155          Load Current                            0.01 A
+140       0000
+144       86ff  
+148       ac08   = 2220           Grid Voltage                             0.1 V
+152       3600   = 54             Grid Current                             0.01 A  
+156       8a13   = 50.1           Grid Frequency                           0.01 Hz
+160       0000
+164       0000
+168       0000
+172       8408                     Batt Voltage                             0.01 V
+176       9500   = 14.9 A          Batt Charge Current     signed value     0.1 A  
+          dcff   = -36            - negative if discharging                 -0.1 A 
+180       0000   
+184       0000   
+188       c008   = 224             Pv Voltage                              0.1 V
+192       2e00  = 46               PV Current                              0.01 A
+196       6100  = 97               PV Power                                1 W 
+200       c20c = 326.6             Bus Voltage                             0.1 V
+204       0000
+208       2d01
+
+```
+
+
+### Config request:
+```
+void request_config() {
+  unsigned char req[12];
+  unsigned int req_len = 0;
+
+  char req_hex_state[] = "88510003020000004cb0";
+
+  HexStringToBytes(req_hex_state, req, &req_len);
+  Ser1.write(req, req_len); 
+}
+```
+
+Config reply looks like this:
+```
+8851000302005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e008437 
+```
+you have to read the entire inverter config first in order to modify settings.
+Then you have to sent it back to the inverter.
+
+Here is the raw dump of configs and modified settings:
+```
+Output Energy Priority
+01
+Request config data:
+88510003020000004cb0
+8851 0003 0200 0000 4cb0
+Reply:
+PV-GRID-BATTERY:
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+PV-BATTERY-GRID
+8851001002005a0010a4adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e001047
+                   ^
+
+Max Total Charge Current: 
+02
+88510003020000004cb0
+8851 0003 0200 0000 4cb0
+Reply:
+10a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640064006400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00abc1
+                                                                                                                    ^^^^
+20a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400c8006400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00fead
+                                                                                                                    ^^^^
+30a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca0864002c016400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00c0b3
+40a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640090016400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e005475
+50a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400f4016400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e006691
+60a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640058026400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e002849
+70a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400bc026400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e001efb
+80a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640020036400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e000384
+90a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640084036400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00371d
+100a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400e8036400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00640c
+110a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca0864004c046400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e006d11
+120a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400b0046400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00fbfc
+130a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08640014056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00c7c9
+
+150a - my default
+8851000302005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e008437
+                                                                                                                    ^^^^
+
+-------------------------------------
+03 - Grid voltage Range
+88510003020000004cb0
+88510003020000004cb0
+
+Write all config data all at once:
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041 
+                ^   
+8851001002005a0030a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e0094e1
+                ^
+
+8851 0010 0200 5a00 10a0 adc6 9411 fc088 8130 000
+90-265
+8851001002005a0030a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e0094e1
+                ^
+170-265
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+                ^
+
+10 - Grid Enable
+MicroNet - Default:
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+Grid Enable
+8851001002005a0010e0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a02a
+
+
+
+11 - Max AC Charge Current:
+10a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+20a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08c800dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e009f3c
+150a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca08dc05dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a6d1
+
+12 Charge finished current:
+11a 
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056e00000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00001e
+10a
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+
+13 recharche voltage
+22.5 
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+23
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09fc086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e0001c1
+23.5
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c092e096400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00cdaf
+
+
+16 Charge energy src
+pv only
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+                  ^   
+pv and grid
+8851001002005a001080adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e002074
+                  ^  
+pv > grid
+8851001002005a001090adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00e06e
+   .   .   .   .  ^
+   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .
+
+
+26 battery charge voltage
+24.6
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a9c09f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00a041
+24
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00a6009f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00d777
+25
+8851001002005a0010a0adc69411fc08881300000000d007b80bd007500a0000a4061c0cb80bd0079808500ab80bf00ac409f00a9c09ca086400dc056400000000003cfb32003cec32f67c158813e803241300005050504b4b4bc4093c003c001e00500b
+
+27 float charge voltage
+26.4
+?
+
+
+```
+
+Useful tool to compare hex strings:
+https://encrypt-online.com/tools/text-compare
