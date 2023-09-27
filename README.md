@@ -1,1 +1,2 @@
-# powmr4500_comm
+# PowMr 4500 / 6500 communication protocol
+
