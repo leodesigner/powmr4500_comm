@@ -51,10 +51,10 @@ struct inv8851_state_s  {
                 uint16_t run_mode; // тут чотири поля по чотир біти
                 struct
                 {
-                  enum run_mode inverter_topology:4;
-                  enum run_mode llc_topology:4;
-                  enum run_mode pv_topology:4;
-                  enum run_mode buck_topology:4;
+                    enum run_mode inverter_topology:4;
+                    enum run_mode llc_topology:4;
+                    enum run_mode pv_topology:4;
+                    enum run_mode buck_topology:4;
                 } ;
             };
             struct // t0001
@@ -75,6 +75,8 @@ struct inv8851_state_s  {
                 uint8_t eq_charge_start:1;
                 uint8_t eq_charge_ready:1;
                 uint8_t w6:2;
+
+
             };
             int16_t t0002; //  maybe warning flags
             int16_t t0003; //  maybe warning flags
@@ -82,7 +84,6 @@ struct inv8851_state_s  {
             {
                 uint8_t grid_pll_ok:1;
                 uint8_t lo0004:7; // unused, maybe warning flags
-
                 uint8_t hi0004:1; // unused, maybe warning flags
                 uint8_t disable_utility:1;
                 uint8_t hi0004_:6; // unused, maybe warning flags
@@ -97,10 +98,12 @@ struct inv8851_state_s  {
             int16_t t0012; //  maybe warning flags
             struct                                                                         //int16_t t0013
             {
-                uint8_t lo0013:7; // unused, maybe warning flags
+                uint8_t lo0013:4; // unused, maybe warning flags
                 uint8_t pv_input_ok:1;
+                uint8_t lo0013_:3; // unused, maybe warning flags
+
                 uint8_t parallel_lock_phase_ok:1;
-                uint8_t hi0013:7; // unused, maybe warning flags
+                uint8_t hi0013:6; // unused, maybe warning flags
             };
             int16_t softvare_version;                                                       //int16_t t0014
             int16_t log_number;                                                             //int16_t t0015
@@ -115,7 +118,7 @@ struct inv8851_state_s  {
             int16_t inv_va;         // 1 va
             int16_t load_va;        // 1 va
             int16_t t0026;          // те саме що й inv_va тільки із знаком "-", співпадає з t0032, інколи є робіжність в 2-3 одиниці, це схоже на потужність яку воно споживає з мережі є думка що це повна потужність
-            int16_t load_power;     // 1 w
+            int16_t load_watt;     // 1 w
             int16_t inverter_va_percent;    // t0028;
             int16_t inverter_watt_percent;  // t0029;
             int16_t load_current;   // 0.01 a
