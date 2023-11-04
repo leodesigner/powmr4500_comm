@@ -207,63 +207,89 @@ struct inv8851_config_s {
         uint16_t words[45];
         struct
         {
-            int16_t energy_priority;     // output energy priority / charger priority
-                // 0x10a0 - pv-grid-battery (sub)  bit 2 = 0
-                // 0x10a4 - pv-battery-grid (sbu)  bit 2 = 1
-                // 0x1084 - sbu + snu charge mode
-                // 0x10a0 - - charge only from solar  (oso) a
-                // 0x1080 - - charge from pv and grid (snu) 8
-                // 0x1090 - pv > grid charge (cso)          9
-                // output source пріоріті (01) 0x2010-sub  0x2410-sbu це мабуть регістер прапорів 11-й біт схоже залежить від параметра (01)
-                // старша 2 буда коли параметр (16) був oso, як включив snu змінилась на 0
-            int16_t t0002;
-            int16_t t0003;
-            int16_t output_voltage;     // output voltage (08)
-            int16_t output_freq;        // output frequency (09)
+            struct //int16_t t0001;
+            {
+                uint8_t parallel_operation:1; // (14)
+                uint8_t phase:2;              // (15) 0-A 1-B 2-C
+                uint8_t battery_type:2;       // (05) 0-AGM 1-Flooded 2-User 3-Lib
+                uint8_t grid_voltage_range:1; // (03)
+                uint8_t lo0000_6:1;
+                uint8_t frequency:1;  // 0 - 50, 1 - 60
+
+                uint8_t hi0000_0:1;
+                uint8_t hi0000_1:1;
+                uint8_t output_energy_priority:1;        //(01)
+                uint8_t hi0000_3:1;
+                uint8_t charge_energy_priority:2;        // (16)  0 - PV&Grid 1 - PV>Grid 2 - PV Only
+                uint8_t grid_enale:1;                    // (10)
+                uint8_t energy_interrupt_buzzer_on:1;    // (22)
+            };
+            struct //int16_t t0001;
+            {
+                uint8_t warning_flag_buzer_on:1;
+                uint8_t alarm_control:1;                  // (18)
+                uint8_t l0001_2:1;
+                uint8_t l0001_4:1;
+                uint8_t powersave_on:1;                   // (04)
+                uint8_t l0001_5:1;
+                uint8_t auto_return_to_default_screen:1;  // (19)
+                uint8_t backlight_on:1;                   // (20)
+
+                uint8_t h0001_0:1;
+                uint8_t output_OPP_auto_restart:1;        // (06)
+                uint8_t h0001_2:1;
+                uint8_t h0001_3:1;
+                uint8_t h0001_4:1;
+                uint8_t h0001_5:1;
+                uint8_t otp_auto_restart:1;               // (07)
+                uint8_t fault_record_enable:1;            // (25)
+            };
+            int16_t inverter_max_power;                   // read only ?
+            int16_t output_voltage;                       // (08) output voltage
+            int16_t output_freq;                          // (09) output frequency
+            int16_t t0005;
             int16_t t0006;
-            int16_t t0007;
-            int16_t t0008;
-            int16_t t0009;
-            int16_t t0010;
-            int16_t t0011;
-            int16_t t0012;
-            int16_t t0013;
-            int16_t t0014;
-            int16_t t0015;
-            int16_t batt_cut_off_voltage;           //  low dc cut-off voltage (29)  0.01 v
-            int16_t t0017;
-            int16_t t0018;
-            int16_t t0019;
-            int16_t t0020;
-            int16_t batt_bulk_chg_voltage;          // bulk charge voltage (26)   0.01 v
-            int16_t t0022;
-            int16_t batt_float_chg_voltage;         // floating charge voltage (27)            0.01 v
-            int16_t batt_pont_back_to_util_volt;    // voltage point back to utility (13)      0.01 v
-            int16_t util_chg_current;               // maximum utilty charge current (11)      0.1 a  112 offset
-            int16_t total_chg_current;              // maximum charge current (02)             0.1 a  114
-            int16_t batt_chg_cut_off_current;       // battery charge cut-off current (12)     0.1 a
+            int16_t t0007; // 2000
+            int16_t t0008; // 3000
+            int16_t t0009; // 2000
+            int16_t t0010; // 2640
+            int16_t t0011; // 0
+            int16_t t0012; // 1700
+            int16_t t0013; // 3100
+            int16_t t0014; // 3000
+            int16_t batt_cut_off_voltage;         // (29)  low dc cut-off voltage   0.01 v
+            int16_t t0016; // 2200
+            int16_t t0017; // 26400
+            int16_t t0018; // 3000
+            int16_t t0019; // 2800
+            int16_t batt_bulk_chg_voltage;        // (26) battery_charge_voltage      // bulk charge voltage    0.01 v
+            int16_t t0021; // 2800
+            int16_t batt_float_chg_voltage;       // (27) floating charge voltage                               0.01 v
+            int16_t batt_pont_back_to_util_volt;  // (13) recharge votage, voltage point back to utility        0.01 v
+            int16_t util_chg_current;             // (11) max ac charge current в телефоні                      0.1 a  112 offset
+            int16_t total_chg_current;            // (02) maximum charge current                                0.1 a
+            int16_t batt_chg_cut_off_current;     // (12) charge_finished_current                               0.1 a
+            int16_t t0027;
             int16_t t0028;
-            int16_t t0029;
-            int16_t t0030;
-            int16_t t0031;
-            int16_t t0032;
-            int16_t t0033;
-            int16_t t0034;
-            int16_t t0035;
-            int16_t t0036;
-            int16_t t0037;
-            int16_t t0038;
-            int16_t t0039;
-            int16_t t0040;
-            int16_t t0041;
-            int16_t batt_eq_voltage;                // battery equalization voltage (34)       0.01 v
-            int16_t batt_eq_time;                   // battery equalization time (35)
-            int16_t batt_eq_timeout;                // battery equalization timeout (36)
-            int16_t batt_eq_interval;               // equalization interval(37)
+            int16_t t0029; // 0xFB3C
+            int16_t t0030; // 50
+            int16_t t0031; // EC3C
+            int16_t t0032; // F632
+            int16_t t0033; // 5500
+            int16_t t0034; // 5000
+            int16_t t0035; // 1000
+            int16_t t0036; // 4900
+            uint16_t battery_equalization;        // (33)  0/1            int16_t t0037;
+            int16_t t0038; // 0x5050
+            int16_t t0039; // 0x4B50
+            int16_t t0040; // 0x4B4B
+            int16_t batt_eq_voltage;              // (34) battery equalization voltage        0.01 v
+            int16_t batt_eq_time;                 // (35) battery equalization time
+            int16_t batt_eq_timeout;              // (36) battery equalization timeout
+            int16_t batt_eq_interval;             // (37) equalization interval
 
         };
     };
-
     uint16_t crc;   // modbus crc16
 };
 #pragma pack(pop)
