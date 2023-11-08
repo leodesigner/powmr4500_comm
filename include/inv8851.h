@@ -122,7 +122,7 @@ struct inv8851_state_s  {
             int16_t inverter_va_percent;    // t0028;
             int16_t inverter_watt_percent;  // t0029;
             int16_t load_current;   // 0.01 a
-            int16_t low_load_currennt;
+            int16_t low_load_current;
             int16_t t0032; // див. t0026 на телефоні ніде не відображається
             int16_t grid_voltage;   // 0.1 v
             int16_t grid_current;   // 0.01 a
