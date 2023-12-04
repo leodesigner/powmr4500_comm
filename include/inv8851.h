@@ -105,41 +105,41 @@ struct inv8851_state_s  {
                 uint8_t parallel_lock_phase_ok:1;
                 uint8_t hi0013:6; // unused, maybe warning flags
             };
-            int16_t softvare_version;                                                       //int16_t t0014
+            int16_t software_version;                                                       //int16_t t0014
             int16_t log_number;                                                             //int16_t t0015
             int16_t t0016;
             int16_t t0017;
             int16_t t0018;
             int16_t t0019;
             int16_t t0020;
-            int16_t inv_voltage;    // 0,1 volt
-            int16_t inv_current;    // 0.01 a
-            int16_t inv_freq;       // 0.01 hz
-            int16_t inv_va;         // 1 va
-            int16_t load_va;        // 1 va
-            int16_t t0026;          // те саме що й inv_va тільки із знаком "-", співпадає з t0032, інколи є робіжність в 2-3 одиниці, це схоже на потужність яку воно споживає з мережі є думка що це повна потужність
-            int16_t load_watt;     // 1 w
+            int16_t inv_voltage;            // 0,1 volt
+            int16_t inv_current;            // 0.01 a
+            int16_t inv_freq;               // 0.01 hz
+            int16_t inv_va;                 // 1 va
+            int16_t load_va;                // 1 va
+            int16_t t0026;                  // те саме що й inv_va тільки із знаком "-", співпадає з t0032, інколи є робіжність в 2-3 одиниці, це схоже на потужність яку воно споживає з мережі є думка що це повна потужність
+            int16_t load_watt;              // 1 w
             int16_t inverter_va_percent;    // t0028;
             int16_t inverter_watt_percent;  // t0029;
-            int16_t load_current;   // 0.01 a
+            int16_t load_current;           // 0.01 a
             int16_t low_load_current;
-            int16_t t0032; // див. t0026 на телефоні ніде не відображається
-            int16_t grid_voltage;   // 0.1 v
-            int16_t grid_current;   // 0.01 a
-            int16_t grid_freq ;     // 0.01 hz
+            int16_t t0032;                  // див. t0026 на телефоні ніде не відображається
+            int16_t grid_voltage;           // 0.1 v
+            int16_t grid_current;           // 0.01 a
+            int16_t grid_freq ;             // 0.01 hz
             int16_t parallel_voltage;
             int16_t parallel_current;
             int16_t parallel_frequency;
-            int16_t batt_voltage;   // 0.01 v
-            int16_t batt_charge_current; //  0.1 a, negative if battery is discharging
+            int16_t batt_voltage;           // 0.01 v
+            int16_t batt_charge_current;    //  0.1 a, negative if battery is discharging
             int16_t t0041;
             int16_t t0042;
-            int16_t pv_voltage;     // 0.1 v
-            int16_t pv_current;     // 0.01 a
-            int16_t pv_power;       // 1 w
-            int16_t bus_voltage;    // 0.1 v
+            int16_t pv_voltage;             // 0.1 v
+            int16_t pv_current;             // 0.01 a
+            int16_t pv_power;               // 1 w
+            int16_t bus_voltage;            // 0.1 v
             int16_t t0047;
-            int16_t t0048; // тут є якесь значення але воно ніде не відображається.
+            int16_t t0048;                  // тут є якесь значення але воно ніде не відображається.
             int16_t inverter_voltage_dc_component; // t0049
             struct                                 // t0050
             {
@@ -209,19 +209,19 @@ struct inv8851_config_s {
         {
             struct //int16_t t0001;
             {
-                uint8_t parallel_operation:1; // (14)
-                uint8_t phase:2;              // (15) 0-A 1-B 2-C
-                uint8_t battery_type:2;       // (05) 0-AGM 1-Flooded 2-User 3-Lib
-                uint8_t grid_voltage_range:1; // (03)
+                uint8_t parallel_operation:1;             // (14)
+                uint8_t phase:2;                          // (15) 0-A 1-B 2-C
+                uint8_t battery_type:2;                   // (05) 0-AGM 1-Flooded 2-User 3-Lib
+                uint8_t grid_voltage_range:1;             // (03)
                 uint8_t lo0000_6:1;
-                uint8_t frequency:1;  // 0 - 50, 1 - 60
+                uint8_t frequency:1;                      // 0 - 50, 1 - 60
 
                 uint8_t hi0000_0:1;
                 uint8_t hi0000_1:1;
                 uint8_t output_energy_priority:1;        //(01)
                 uint8_t hi0000_3:1;
                 uint8_t charge_energy_priority:2;        // (16)  0 - PV&Grid 1 - PV>Grid 2 - PV Only
-                uint8_t grid_enale:1;                    // (10)
+                uint8_t grid_enable:1;                   // (10)
                 uint8_t energy_interrupt_buzzer_on:1;    // (22)
             };
             struct //int16_t t0001;
@@ -257,18 +257,18 @@ struct inv8851_config_s {
             int16_t t0012; // 1700
             int16_t t0013; // 3100
             int16_t t0014; // 3000
-            int16_t batt_cut_off_voltage;         // (29)  low dc cut-off voltage   0.01 v
+            int16_t batt_cut_off_voltage;                 // (29)  low dc cut-off voltage   0.01 v
             int16_t t0016; // 2200
             int16_t t0017; // 26400
             int16_t t0018; // 3000
             int16_t t0019; // 2800
-            int16_t batt_bulk_chg_voltage;        // (26) battery_charge_voltage      // bulk charge voltage    0.01 v
+            int16_t batt_bulk_chg_voltage;                // (26) battery_charge_voltage      // bulk charge voltage    0.01 v
             int16_t t0021; // 2800
-            int16_t batt_float_chg_voltage;       // (27) floating charge voltage                               0.01 v
-            int16_t batt_pont_back_to_util_volt;  // (13) recharge votage, voltage point back to utility        0.01 v
-            int16_t util_chg_current;             // (11) max ac charge current в телефоні                      0.1 a  112 offset
-            int16_t total_chg_current;            // (02) maximum charge current                                0.1 a
-            int16_t batt_chg_cut_off_current;     // (12) charge_finished_current                               0.1 a
+            int16_t batt_float_chg_voltage;               // (27) floating charge voltage                               0.01 v
+            int16_t batt_pont_back_to_util_volt;          // (13) recharge votage, voltage point back to utility        0.01 v
+            int16_t util_chg_current;                     // (11) max ac charge current в телефоні                      0.1 a  112 offset
+            int16_t total_chg_current;                    // (02) maximum charge current                                0.1 a
+            int16_t batt_chg_cut_off_current;             // (12) charge_finished_current                               0.1 a
             int16_t t0027;
             int16_t t0028;
             int16_t t0029; // 0xFB3C
@@ -279,14 +279,14 @@ struct inv8851_config_s {
             int16_t t0034; // 5000
             int16_t t0035; // 1000
             int16_t t0036; // 4900
-            uint16_t battery_equalization;        // (33)  0/1            int16_t t0037;
+            uint16_t battery_equalization;                // (33)  0/1            int16_t t0037;
             int16_t t0038; // 0x5050
             int16_t t0039; // 0x4B50
             int16_t t0040; // 0x4B4B
-            int16_t batt_eq_voltage;              // (34) battery equalization voltage        0.01 v
-            int16_t batt_eq_time;                 // (35) battery equalization time
-            int16_t batt_eq_timeout;              // (36) battery equalization timeout
-            int16_t batt_eq_interval;             // (37) equalization interval
+            int16_t batt_eq_voltage;                      // (34) battery equalization voltage        0.01 v
+            int16_t batt_eq_time;                         // (35) battery equalization time
+            int16_t batt_eq_timeout;                      // (36) battery equalization timeout
+            int16_t batt_eq_interval;                     // (37) equalization interval
 
         };
     };
