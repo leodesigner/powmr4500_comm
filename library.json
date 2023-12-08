@@ -1,0 +1,26 @@
+{
+    "name": "PowMr 4500/6500 registers map",
+    "version": "1.0.0",
+    "description": "Almost complete reverse engeneering of communication protocol for PowMr 4500/6500 series all in one inverters",
+    "keywords": "serial protocol, inverter, register map",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/leodesigner/powmr4500_comm.git"
+    },
+    "authors":
+    [
+      {
+        "name": "LeoDesigner, Ivan C, Maksym D",
+        "email": "anvivaldi27@gmail.com",
+        "url": "https://github.com/leodesigner",
+        "maintainer": true
+      }
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/leodesigner/powmr4500_comm",
+    "dependencies": {
+    },
+    "frameworks": "*",
+    "platforms": "*"
+  }

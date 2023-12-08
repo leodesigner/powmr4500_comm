@@ -126,7 +126,7 @@ struct inv8851_state_s  {
             int16_t t0032;                  // див. t0026 на телефоні ніде не відображається
             int16_t grid_voltage;           // 0.1 v
             int16_t grid_current;           // 0.01 a
-            int16_t grid_freq ;             // 0.01 hz
+            int16_t grid_freq;              // 0.01 hz
             int16_t parallel_voltage;
             int16_t parallel_current;
             int16_t parallel_frequency;
@@ -182,14 +182,16 @@ struct inv8851_state_s  {
 
 };
 #pragma pack(pop)
+
 typedef   inv8851_state_s inv8851_state_t;
 
-
 const int inv8851_config_pkt_len = 100;
-const int inv8851_config_cmd_write  = 0x1000 ;
+const int inv8851_config_cmd_write  = 0x1000;
+const int inv8851_config_cmd_read   = 0x0300;
 
 #define INV8851_CONFIG_PKT_LEN          (100)
 #define INV8851_CONFIG_CMD_WRITE        0x1000
+#define INV8851_CONFIG_CMD_READ         0x0300
 
 /*
  * Inverter config. 100 bytes len
@@ -218,7 +220,7 @@ struct inv8851_config_s {
 
                 uint8_t hi0000_0:1;
                 uint8_t hi0000_1:1;
-                uint8_t output_energy_priority:1;        //(01)
+                uint8_t output_energy_priority:1;        // (01)  0 - SUB, 1 - SBU
                 uint8_t hi0000_3:1;
                 uint8_t charge_energy_priority:2;        // (16)  0 - PV&Grid 1 - PV>Grid 2 - PV Only
                 uint8_t grid_enable:1;                   // (10)
@@ -244,7 +246,7 @@ struct inv8851_config_s {
                 uint8_t otp_auto_restart:1;               // (07)
                 uint8_t fault_record_enable:1;            // (25)
             };
-            int16_t inverter_max_power;                   // read only ?
+            int16_t inverter_max_power;                   // if you set it to a lower value (default 4500), it will cut off power on overload 
             int16_t output_voltage;                       // (08) output voltage
             int16_t output_freq;                          // (09) output frequency
             int16_t t0005;
