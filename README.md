@@ -3,11 +3,20 @@
 ![img](https://github.com/leodesigner/powmr4500_comm/blob/main/Screenshot%202023-09-27%20at%2010.10.11.png)
 
 
-Non complete reverse engeneering of communication protocol used by
-[PowMr 4500 hybrid inverter](https://powmr.com/products/hybrid-inveter-charger-4500w-220vac-24vdc)
+Almost complete reverse engeneering of communication protocol used by
+[PowMr 4500/6500 hybrid inverter](https://powmr.com/products/hybrid-inveter-charger-4500w-220vac-24vdc)
+
+
+----------------
+ - UPDATE: use `include/inv8851.h` with all registers map
+
+
+----------------
 
 It uses RS232 port with pinout mentioned in the 
 [PowMr Inverter serial communication protocol repository](https://github.com/leodesigner/powmr_comm)
+
+
 
 With the binary frames commnication protocol similar to simplified modbus. (8851 protocol ?)
 
