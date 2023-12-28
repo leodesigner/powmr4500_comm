@@ -1,6 +1,6 @@
 {
-    "name": "PowMr 4500 PowMr 6500 registers map",
-    "version": "1.0.0",
+    "name": "PowMr_4500_regmap",
+    "version": "1.0.1",
     "description": "Almost complete reverse engeneering of communication protocol for PowMr 4500/6500 series all in one inverters",
     "keywords": "serial protocol, inverter, register map",
     "repository":
