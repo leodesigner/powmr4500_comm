@@ -206,15 +206,16 @@ struct inv8851_state_s  {
 
 typedef   inv8851_state_s inv8851_state_t;
 
-const int inv8851_config_pkt_len = 100;
 const int inv8851_config_cmd_write  = 0x1000;
 const int inv8851_config_cmd_read   = 0x0300;
 
 #if INV8851_VERSION == 1
     #define INV8851_CONFIG_PKT_LEN          (100)
+    const int inv8851_config_pkt_len = 100;
 #endif
 #if INV8851_VERSION == 2
     #define INV8851_CONFIG_PKT_LEN          (104)
+    const int inv8851_config_pkt_len = 104;
 #endif
 #define INV8851_CONFIG_CMD_WRITE        0x1000
 #define INV8851_CONFIG_CMD_READ         0x0300
