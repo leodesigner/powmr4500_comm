@@ -9,7 +9,7 @@ Almost complete reverse engeneering of communication protocol used by
 
 ----------------
  - UPDATE: use `include/inv8851.h` with all registers map
-
+ - Check the ESPHOME related project here: https://github.com/lufton/esphome-inv-8851
 
 ----------------
 
