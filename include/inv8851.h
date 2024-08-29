@@ -59,7 +59,7 @@ struct inv8851_state_s  {
 
     union
     {
-        uint16_t words[72];
+        uint16_t words[INV8851_STATE_PKT_LEN / 2 - 5];
         struct
         {
             union // t0000
@@ -232,7 +232,7 @@ struct inv8851_config_s {
 
     union
     {
-        uint16_t words[45];
+        uint16_t words[INV8851_CONFIG_PKT_LEN / 2 - 5];
         struct
         {
             struct //int16_t t0001;
