@@ -3,6 +3,14 @@
 
 #include <cstdint>
 
+// versioning:
+// there is a new version of protocol (new firmware) with the longer packets
+// to use new version you have to define INV8851_VERSION 2
+
+// Check if INV8851_VERSION is defined
+#ifndef INV8851_VERSION
+    #define INV8851_VERSION 1
+#endif
 
 // можливі значення для різних режимів
 // inverter topology 0-10
@@ -32,8 +40,15 @@ enum  run_mode
  * Inverter state.
  */
 // це ж с++... по феншую так а не #define
-const int  inv8851_state_pkt_len = 154; 
-#define INV8851_STATE_PKT_LEN       (154)
+#if INV8851_VERSION == 1
+    const int  inv8851_state_pkt_len = 154; 
+    #define INV8851_STATE_PKT_LEN       (154)
+#endif
+#if INV8851_VERSION == 2
+    const int  inv8851_state_pkt_len = 158; 
+    #define INV8851_STATE_PKT_LEN       (158)
+#endif
+
 
 #pragma pack(push, 1)
 struct inv8851_state_s  {
@@ -179,6 +194,11 @@ struct inv8851_state_s  {
         };
     };
 
+    #if INV8851_VERSION == 2
+        uint16_t extra_word1;
+        uint16_t extra_word2;
+    #endif
+
     uint16_t crc;   // modbus crc16
 
 };
@@ -190,12 +210,17 @@ const int inv8851_config_pkt_len = 100;
 const int inv8851_config_cmd_write  = 0x1000;
 const int inv8851_config_cmd_read   = 0x0300;
 
-#define INV8851_CONFIG_PKT_LEN          (100)
+#if INV8851_VERSION == 1
+    #define INV8851_CONFIG_PKT_LEN          (100)
+#endif
+#if INV8851_VERSION == 2
+    #define INV8851_CONFIG_PKT_LEN          (104)
+#endif
 #define INV8851_CONFIG_CMD_WRITE        0x1000
 #define INV8851_CONFIG_CMD_READ         0x0300
 
 /*
- * Inverter config. 100 bytes len
+ * Inverter config. 100/104 bytes len
  */
 #pragma pack(push, 1)
 struct inv8851_config_s {
@@ -293,6 +318,12 @@ struct inv8851_config_s {
 
         };
     };
+
+    #if INV8851_VERSION == 2
+        uint16_t extra_word1;
+        uint16_t extra_word2;
+    #endif
+
     uint16_t crc;   // modbus crc16
 };
 #pragma pack(pop)
