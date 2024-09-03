@@ -191,13 +191,14 @@ struct inv8851_state_s  {
             int16_t bms_14cell_voltage;  // t0069;
             int16_t bms_15cell_voltage;  // t0070;
             int16_t bms_16cell_voltage;  // t0071;
+
+            #if INV8851_VERSION == 2
+                uint16_t extra_word1;
+                uint16_t extra_word2;
+            #endif
+
         };
     };
-
-    #if INV8851_VERSION == 2
-        uint16_t extra_word1;
-        uint16_t extra_word2;
-    #endif
 
     uint16_t crc;   // modbus crc16
 
@@ -317,13 +318,13 @@ struct inv8851_config_s {
             int16_t batt_eq_timeout;                      // (36) battery equalization timeout
             int16_t batt_eq_interval;                     // (37) equalization interval
 
+            #if INV8851_VERSION == 2
+                uint16_t extra_word1;
+                uint16_t extra_word2;
+            #endif
+
         };
     };
-
-    #if INV8851_VERSION == 2
-        uint16_t extra_word1;
-        uint16_t extra_word2;
-    #endif
 
     uint16_t crc;   // modbus crc16
 };
